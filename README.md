@@ -1,5 +1,18 @@
 # keras-yolo3
 
+## Changes made in this repository
+	- Added a folder [additional_custom](./additional_custom)
+ 	- Video used for inference can be downloaded from [here](https://www.dropbox.com/s/eq2oy5npg4hon16/drive.mp4?dl=0)
+
+
+Below is the sample command used for inference on a video file
+
+```
+python yolo_video.py --model model_data/yolo.h5  --input /home/mohan/git/backups/drive.mp4 --anchors model_data/yolo_anchors.txt --classes model_data/coco_classes.txt
+```
+
+- - -
+
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
 ## Introduction
