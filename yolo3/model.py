@@ -135,8 +135,10 @@ def yolo_head(feats, anchors, num_classes, input_shape, calc_loss=False):
         feats, [-1, grid_shape[0], grid_shape[1], num_anchors, num_classes + 5])
 
     # Adjust preditions to each spatial grid point and anchor size.
-    box_xy = (K.sigmoid(feats[..., :2]) + grid) / tf.cast(grid_shape[::-1], feats.dtype)
-    box_wh = K.exp(feats[..., 2:4]) * anchors_tensor / tf.cast(input_shape[::-1], feats.dtype)
+    #box_xy = (K.sigmoid(feats[..., :2]) + grid) / tf.cast(grid_shape[::-1], feats.dtype)
+    #box_wh = K.exp(feats[..., 2:4]) * anchors_tensor / tf.cast(input_shape[::-1], feats.dtype)
+    box_xy = (K.sigmoid(feats[..., :2]) + grid) / K.cast(grid_shape[..., ::-1], K.dtype(feats))
+    box_wh = K.exp(feats[..., 2:4]) * anchors_tensor / K.cast(input_shape[..., ::-1], K.dtype(feats))
     box_confidence = K.sigmoid(feats[..., 4:5])
     box_class_probs = K.sigmoid(feats[..., 5:])
 
@@ -387,9 +389,9 @@ def yolo_loss(args, anchors, num_classes, ignore_thresh=.5, print_loss=False):
             true_box = tf.boolean_mask(y_true[l][b,...,0:4], object_mask_bool[b,...,0])
             iou = box_iou(pred_box[b], true_box)
             best_iou = K.max(iou, axis=-1)
-            ignore_mask = ignore_mask.write(b, tf.cast(best_iou<ignore_thresh, true_box.dtype)))
+            ignore_mask = ignore_mask.write(b, tf.cast(best_iou<ignore_thresh, true_box.dtype)) #Removing an extra closing bracket which was causing a syntax error
             return b+1, ignore_mask
-        _, ignore_mask = K.control_flow_ops.while_loop(lambda b,*args: b<m, loop_body, [0, ignore_mask])
+        _, ignore_mask = tf.while_loop(lambda b,*args: b<m, loop_body, [0, ignore_mask]) #as K.control_flow.ops.while_loop was throwing this error -> AttributeError: module 'tensorflow.keras.backend' has no attribute 'control_flow_ops'
         ignore_mask = ignore_mask.stack()
         ignore_mask = K.expand_dims(ignore_mask, -1)
 
